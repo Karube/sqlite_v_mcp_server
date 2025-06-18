@@ -1,0 +1,49 @@
+{
+  "name": "sqlite-vss-mcp-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts",
+    "migrate": "tsx scripts/migrate.ts",
+    "example:direct": "npm run build && node examples/test-mcp-direct.js",
+    "example:client": "npm run build && node examples/test-mcp-client.js",
+    "example:server": "npm run build && node examples/test-server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.34.1",
+    "@typescript-eslint/parser": "^8.34.1",
+    "eslint": "^9.29.0",
+    "jest": "^30.0.0",
+    "pino-pretty": "^13.0.0",
+    "prettier": "^3.5.3",
+    "ts-jest": "^29.4.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "@modelcontextprotocol/sdk": "^1.12.3",
+    "better-sqlite3": "^11.10.0",
+    "dotenv": "^16.5.0",
+    "fastify": "^5.4.0",
+    "openai": "^5.5.1",
+    "pino": "^9.7.0",
+    "sqlite-vec": "^0.1.7-alpha.2",
+    "ulid": "^3.0.1"
+  }
+}
