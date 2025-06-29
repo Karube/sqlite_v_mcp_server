@@ -38,8 +38,8 @@ export async function generateEmbeddings(texts: string[]): Promise<BatchEmbeddin
     return { embeddings: [], totalTokens: 0 };
   }
   
-  if (texts.length > 100) {
-    throw new Error('Maximum 100 texts can be processed in a single batch');
+  if (texts.length > config.embeddingBatchSize) {
+    throw new Error(`Maximum ${config.embeddingBatchSize} texts can be processed in a single batch`);
   }
   
   const startTime = Date.now();
@@ -47,11 +47,18 @@ export async function generateEmbeddings(texts: string[]): Promise<BatchEmbeddin
   
   try {
     const client = getOpenAI();
-    const response = await client.embeddings.create({
-      model: 'text-embedding-3-small',
+    const embeddingParams: OpenAI.EmbeddingCreateParams = {
+      model: config.embeddingModel,
       input: texts,
-      encoding_format: 'float',
-    });
+      encoding_format: config.embeddingEncodingFormat,
+    };
+    
+    // Add dimensions parameter if supported by the model
+    if (config.embeddingModel.includes('text-embedding-3-')) {
+      (embeddingParams as any).dimensions = config.embeddingDimensions;
+    }
+    
+    const response = await client.embeddings.create(embeddingParams);
     
     const embeddings = response.data.map(item => item.embedding);
     const totalTokens = response.usage.total_tokens;
@@ -80,4 +87,9 @@ export class EmbeddingError extends Error {
 // Utility function to convert embedding array to Float32Array for sqlite-vec
 export function embeddingToFloat32Array(embedding: number[]): Float32Array {
   return new Float32Array(embedding);
+}
+
+// Get configured embedding dimensions
+export function getEmbeddingDimensions(): number {
+  return config.embeddingDimensions;
 }

@@ -1,7 +1,7 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import { handleMCPRequest, MCPRequest, MCPResponse } from './handlers';
-import { config } from '../config';
+import { config, validateEmbeddingConfig } from '../config';
 import logger from '../utils/logger';
 
 export async function createHttpServer(): Promise<FastifyInstance> {
@@ -87,6 +87,15 @@ export async function createHttpServer(): Promise<FastifyInstance> {
 }
 
 export async function startHttpServer(): Promise<void> {
+  // Validate embedding configuration on startup
+  try {
+    validateEmbeddingConfig();
+    logger.info('Embedding configuration validated successfully');
+  } catch (error) {
+    logger.error({ error: (error as Error).message }, 'Invalid embedding configuration');
+    process.exit(1);
+  }
+  
   try {
     const server = await createHttpServer();
     

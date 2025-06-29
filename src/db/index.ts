@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import * as sqliteVec from 'sqlite-vec';
-import { config, ensureDataDirectory } from '../config';
+import { config, ensureDataDirectory, validateEmbeddingConfig } from '../config';
+import { getEmbeddingDimensions } from '../modules/embed';
 import pino from 'pino';
 import path from 'path';
 import fs from 'fs';
@@ -108,7 +109,11 @@ export class DatabaseManager {
     `).get();
     
     if (!migration001Applied) {
-      // Create vec0 virtual table
+      // Validate embedding configuration before creating table
+      validateEmbeddingConfig();
+      const dimensions = getEmbeddingDimensions();
+      
+      // Create vec0 virtual table with configured dimensions
       this.db.exec(`
         CREATE VIRTUAL TABLE chunks USING vec0(
           chunk_id     TEXT PRIMARY KEY,
@@ -116,7 +121,7 @@ export class DatabaseManager {
           chunk_index  INTEGER NOT NULL,
           text         TEXT AUXILIARY,
           metadata     JSON AUXILIARY,
-          embedding    FLOAT[1536] DISTANCE_METRIC=cosine
+          embedding    FLOAT[${dimensions}] DISTANCE_METRIC=cosine
         )
       `);
       

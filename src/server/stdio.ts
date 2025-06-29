@@ -1,8 +1,18 @@
 import { handleMCPRequest, MCPRequest, MCPResponse } from './handlers';
 import { closeDatabase } from '../db';
+import { validateEmbeddingConfig } from '../config';
 import logger from '../utils/logger';
 
 export async function startStdioServer(): Promise<void> {
+  // Validate embedding configuration on startup
+  try {
+    validateEmbeddingConfig();
+    logger.info('Embedding configuration validated successfully');
+  } catch (error) {
+    logger.error({ error: (error as Error).message }, 'Invalid embedding configuration');
+    process.exit(1);
+  }
+  
   logger.info('Starting stdio MCP server');
   
   // Set up input stream

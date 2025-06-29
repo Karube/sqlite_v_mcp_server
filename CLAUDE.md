@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an MCP (Model Context Protocol) Vector Server that provides vector similarity search capabilities using SQLite and sqlite-vec extension. The project implements Japanese document storage with OpenAI embeddings and vector search functionality through MCP tools.
+This is an MCP (Model Context Protocol) Vector Server that provides vector similarity search capabilities using SQLite and sqlite-vec extension. The project implements Japanese document storage with configurable OpenAI embeddings and vector search functionality through MCP tools.
 
 ## Development Commands
 
@@ -20,21 +20,24 @@ npm run dev
 
 # Run tests
 npm run test
+npm run test:watch    # Watch mode
+npm run test:coverage # Generate coverage report
 
 # Run migrations
 npm run migrate
 
-# Lint code
+# Lint and format code
 npm run lint
-
-# Format code
 npm run format
 
-# Start server in stdio mode
-npm start -- --stdio
+# Start server modes
+npm start -- --stdio      # stdio mode for MCP protocol
+npm start -- --http --port 3000  # HTTP mode with JSON-RPC
 
-# Start HTTP server
-npm start -- --http --port 3000
+# Example scripts
+npm run example:direct   # Test MCP direct usage
+npm run example:client   # Test MCP client
+npm run example:server   # Test server functionality
 ```
 
 ## Architecture
@@ -57,16 +60,23 @@ npm start -- --http --port 3000
 
 ### Database Schema
 
-Uses sqlite-vec virtual table:
 ```sql
+-- Virtual table for vector storage
 CREATE VIRTUAL TABLE chunks USING vec0(
-  chunk_id     TEXT       PRIMARY KEY,  -- ULID
-  doc_id       TEXT       NOT NULL,
-  chunk_index  INTEGER    NOT NULL,
-  text         TEXT       AUXILIARY,
-  metadata     JSON       AUXILIARY,
-  embedding    FLOAT[1536] DISTANCE_METRIC=cosine
+  embedding FLOAT[1536]
 );
+
+-- Metadata table for document information
+CREATE TABLE chunk_metadata (
+  chunk_id     TEXT PRIMARY KEY,     -- ULID
+  doc_id       TEXT NOT NULL,
+  chunk_index  INTEGER NOT NULL,
+  text         TEXT NOT NULL,
+  metadata     JSON,
+  created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_chunk_metadata_doc_id ON chunk_metadata(doc_id);
 ```
 
 ### Directory Structure
@@ -76,8 +86,8 @@ src/
 ├── config/          # Configuration and environment
 ├── db/              # Database connection and migrations
 ├── modules/         # Core functionality (chunker, embedder)
-├── tools/           # MCP tool implementations
 ├── server/          # Server entry points (stdio/http)
+├── tools/           # MCP tool implementations
 └── utils/           # Shared utilities
 ```
 
@@ -90,11 +100,14 @@ src/
 - **Pino**: Structured JSON logging
 - **ULID**: Sortable unique identifiers
 - **MCP SDK**: Model Context Protocol implementation
+- **OpenAI SDK**: For configurable embedding models
 
 ### Development Notes
 
 - WAL mode is enabled for SQLite to support concurrent reads
-- Embeddings are generated in batches of up to 100 texts
+- Embeddings are configurable (model, dimensions, batch size)
 - All async operations use proper error handling
 - Database path defaults to `./data/vectors.db`
 - OpenAI API key required in `OPENAI_API_KEY` environment variable
+- Performance target: P95 < 300ms for 10k chunks on M1 Mac
+- Embedding configuration is validated on server startup

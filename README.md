@@ -6,7 +6,8 @@ A Model Context Protocol (MCP) server that provides vector similarity search cap
 
 - **Vector Search**: Uses sqlite-vec for efficient cosine similarity search
 - **Text Chunking**: Intelligent text splitting optimized for Japanese content (700 chars + 100 overlap)
-- **OpenAI Embeddings**: text-embedding-3-small (1536 dimensions) with batch processing
+- **OpenAI Embeddings**: Configurable models (3-small, 3-large, ada-002) with adjustable dimensions
+- **Batch Loading**: Import multiple documents from JSON, CSV, or text files
 - **Dual Modes**: HTTP server (JSON-RPC 2.0) and stdio mode for direct MCP communication
 - **TypeScript**: Full type safety with strict mode
 
@@ -181,6 +182,57 @@ Environment variables:
 | `CHUNK_SIZE` | `700` | Text chunk size |
 | `CHUNK_OVERLAP` | `100` | Text chunk overlap |
 | `DEFAULT_TOP_K` | `10` | Default search results count |
+| `EMBEDDING_MODEL` | `text-embedding-3-small` | OpenAI embedding model |
+| `EMBEDDING_DIMENSIONS` | `1536` | Embedding vector dimensions |
+| `EMBEDDING_BATCH_SIZE` | `100` | Max texts per embedding batch |
+| `EMBEDDING_PROVIDER` | `openai` | Embedding provider (openai only) |
+| `EMBEDDING_ENCODING_FORMAT` | `float` | Encoding format (float/base64) |
+
+### Embedding Models
+
+Supported OpenAI models and their dimension ranges:
+
+| Model | Min Dimensions | Max Dimensions | Default |
+|-------|----------------|----------------|----------|
+| `text-embedding-3-small` | 512 | 1536 | 1536 |
+| `text-embedding-3-large` | 256 | 3072 | 3072 |
+| `text-embedding-ada-002` | 1536 | 1536 | 1536 |
+
+## Batch Loading
+
+The server includes a batch loading utility for efficiently importing multiple documents from various file formats.
+
+### Quick Start
+
+```bash
+# Load documents from JSON
+npm run batch-load samples/test-documents.json
+
+# Preview without inserting (dry run)
+npm run batch-load samples/documents.csv --dry-run
+
+# Load with custom batch size
+npm run batch-load data.json --batch-size 5
+```
+
+### Supported Formats
+
+- **JSON**: Array of strings or objects with text/metadata
+- **CSV**: Must have a 'text' column, other columns become metadata
+- **TXT**: Plain text with double-newline separation or with metadata headers
+- **Custom formats**: See [docs/batch-loading.md](./docs/batch-loading.md) for details
+
+### Example
+
+```bash
+# Load the provided test documents
+npm run batch-load samples/test-documents.json
+
+# Run the interactive example
+node examples/batch-load-example.js
+```
+
+For detailed documentation on batch loading, see [docs/batch-loading.md](./docs/batch-loading.md).
 
 ## Development
 
