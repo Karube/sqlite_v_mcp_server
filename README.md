@@ -283,6 +283,12 @@ Test documents are available in `samples/test-documents.json` with 20 sample doc
 - Travel & Environment
 - Art & Science
 
+## Documentation
+
+- [日本語ドキュメント](./README.ja.md)
+- [Batch Loading Guide](./docs/batch-loading.md) | [日本語](./docs/batch-loading.ja.md)
+- [Embedding Configuration Guide](./docs/embedding-configuration.md) | [日本語](./docs/embedding-configuration.ja.md)
+
 ## License
 
 MIT
